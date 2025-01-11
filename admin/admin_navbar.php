@@ -16,12 +16,16 @@ if (!isset($_SESSION)) {
                        href="dashboard.php">Dashboard</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'manage_books.php' ? 'active' : ''; ?>" 
+                       href="manage_books.php">Books</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'manage_categories.php' ? 'active' : ''; ?>" 
                        href="manage_categories.php">Categories</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'manage_books.php' ? 'active' : ''; ?>" 
-                       href="manage_books.php">Books</a>
+                    <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'manage_orders.php' ? 'active' : ''; ?>" 
+                       href="manage_orders.php">Orders</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'manage_sales.php' ? 'active' : ''; ?>" 
@@ -35,6 +39,7 @@ if (!isset($_SESSION)) {
                     <a class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'messages.php' ? 'active' : ''; ?>" 
                        href="messages.php">Messages</a>
                 </li>
+                
             </ul>
             <div class="navbar-nav">
                 <span class="nav-item nav-link text-light">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></span>
