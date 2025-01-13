@@ -3,10 +3,26 @@ require_once '../auth/check_auth.php';
 require_once '../auth/config.php';
 requireAdmin();
 
-// Get filter parameters
-$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-d', strtotime('-30 days'));
-$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
-$search = isset($_GET['search']) ? $_GET['search'] : '';
+// Initialize or get session filters
+if (!isset($_SESSION['manage_sales_filters'])) {
+    $_SESSION['manage_sales_filters'] = [
+        'start_date' => date('Y-m-d', strtotime('-30 days')),
+        'end_date' => date('Y-m-d'),
+        'search' => ''
+    ];
+}
+
+// Update session filters if new filters are submitted
+if (isset($_GET['start_date'])) {
+    $_SESSION['manage_sales_filters']['start_date'] = $_GET['start_date'];
+    $_SESSION['manage_sales_filters']['end_date'] = $_GET['end_date'];
+    $_SESSION['manage_sales_filters']['search'] = $_GET['search'] ?? '';
+}
+
+// Get filter parameters from session
+$start_date = $_SESSION['manage_sales_filters']['start_date'];
+$end_date = $_SESSION['manage_sales_filters']['end_date'];
+$search = $_SESSION['manage_sales_filters']['search'];
 
 // Base query
 $sql = "SELECT 

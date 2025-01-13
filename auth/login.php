@@ -34,8 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Redirect based on user type
             if ($user['user_type'] === 'admin') {
+                $_SESSION['is_admin'] = true;
                 header("Location: ../admin/dashboard.php");
             } else {
+                // Load user's cart items from database
+                $stmt = $conn->prepare("SELECT book_id, quantity FROM cart_items WHERE user_id = ?");
+                $stmt->bind_param("i", $user['user_id']);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                
+                // Initialize cart in session
+                $_SESSION['cart'] = [];
+                while ($item = $result->fetch_assoc()) {
+                    $_SESSION['cart'][$item['book_id']] = $item['quantity'];
+                }
+
                 header("Location: ../user/dashboard.php");
             }
             exit();

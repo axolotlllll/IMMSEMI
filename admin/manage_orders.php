@@ -61,10 +61,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_order'])) {
 // Get all orders with user and book details
 $query = "
     SELECT o.*, u.username,
-           COUNT(od.order_detail_id) as item_count
+           COUNT(od.order_detail_id) as item_count,
+           GROUP_CONCAT(CONCAT(b.title, ' (', od.quantity, ')') SEPARATOR ', ') as book_details
     FROM orders o
     JOIN users u ON o.user_id = u.user_id
     JOIN order_details od ON o.order_id = od.order_id
+    JOIN books b ON od.book_id = b.book_id
     GROUP BY o.order_id
     ORDER BY o.order_date DESC
 ";
@@ -111,7 +113,7 @@ $orders = $conn->query($query);
                         <th>Order ID</th>
                         <th>Customer</th>
                         <th>Date</th>
-                        <th>Items</th>
+                        <th>Books</th>
                         <th>Total</th>
                         <th>Status</th>
                         <th>Payment</th>
@@ -124,8 +126,12 @@ $orders = $conn->query($query);
                             <td>#<?php echo $order['order_id']; ?></td>
                             <td><?php echo htmlspecialchars($order['username']); ?></td>
                             <td><?php echo date('M d, Y H:i', strtotime($order['order_date'])); ?></td>
-                            <td><?php echo $order['item_count']; ?> items</td>
-                            <td>$<?php echo number_format($order['total_amount'], 2); ?></td>
+                            <td>
+                                <small><?php echo htmlspecialchars($order['book_details']); ?></small>
+                                <br>
+                                <span class="text-muted">(<?php echo $order['item_count']; ?> items)</span>
+                            </td>
+                            <td>₱<?php echo number_format($order['total_amount'], 2); ?></td>
                             <td>
                                 <span class="badge bg-<?php 
                                     echo $order['order_status'] == 'completed' ? 'success' : 

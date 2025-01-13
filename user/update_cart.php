@@ -7,6 +7,7 @@ requireLogin();
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $book_id = (int)$_POST['book_id'];
     $quantity = (int)$_POST['quantity'];
+    $user_id = $_SESSION['user_id'];
 
     // Validate quantity
     if ($quantity <= 0) {
@@ -28,9 +29,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
 
-    // Update cart quantity
-    $_SESSION['cart'][$book_id] = $quantity;
-    $_SESSION['success'] = "Cart updated successfully";
+    try {
+        // Start transaction
+        $conn->begin_transaction();
+
+        // Update cart item in database
+        $stmt = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND book_id = ?");
+        $stmt->bind_param("iii", $quantity, $user_id, $book_id);
+        $stmt->execute();
+
+        if ($stmt->affected_rows === 0) {
+            // If no rows were updated, insert new cart item
+            $stmt = $conn->prepare("INSERT INTO cart_items (user_id, book_id, quantity) VALUES (?, ?, ?)");
+            $stmt->bind_param("iii", $user_id, $book_id, $quantity);
+            $stmt->execute();
+        }
+
+        // Update session cart
+        $_SESSION['cart'][$book_id] = $quantity;
+
+        // Commit transaction
+        $conn->commit();
+        $_SESSION['success'] = "Cart updated successfully";
+
+    } catch (Exception $e) {
+        // Rollback on error
+        $conn->rollback();
+        $_SESSION['error'] = "Error updating cart: " . $e->getMessage();
+    }
 }
 
 header("Location: cart.php");
