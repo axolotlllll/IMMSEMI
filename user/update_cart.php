@@ -33,13 +33,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         // Start transaction
         $conn->begin_transaction();
 
-        // Update cart item in database
-        $stmt = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND book_id = ?");
-        $stmt->bind_param("iii", $quantity, $user_id, $book_id);
+        // First check if item exists in cart
+        $stmt = $conn->prepare("SELECT cart_item_id FROM cart_items WHERE user_id = ? AND book_id = ?");
+        $stmt->bind_param("ii", $user_id, $book_id);
         $stmt->execute();
-
-        if ($stmt->affected_rows === 0) {
-            // If no rows were updated, insert new cart item
+        $result = $stmt->get_result();
+        
+        if ($result->num_rows > 0) {
+            // Item exists, update quantity
+            $stmt = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND book_id = ?");
+            $stmt->bind_param("iii", $quantity, $user_id, $book_id);
+            $stmt->execute();
+        } else {
+            // Item doesn't exist, insert new
             $stmt = $conn->prepare("INSERT INTO cart_items (user_id, book_id, quantity) VALUES (?, ?, ?)");
             $stmt->bind_param("iii", $user_id, $book_id, $quantity);
             $stmt->execute();
